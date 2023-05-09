@@ -1,0 +1,86 @@
+#include <SDL2/SDL.h>
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    // Initialize SDL and create a window
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window* window = SDL_CreateWindow("Horse Animation", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+
+    // Load horse image and animation frames
+    SDL_Surface* horse = SDL_LoadBMP("horse.bmp");
+    SDL_Texture* horseTexture = SDL_CreateTextureFromSurface(renderer, horse);
+
+    // Set up animation variables
+    int frameWidth = 120;
+    int frameHeight = 120;
+    int currentFrame = 0;
+    int numFrames = 4;
+    int frameDelay = 10;
+    int frameTimer = 0;
+    int horseX = 0;
+    int horseY = 240;
+    int horseSpeed = 5;
+
+    // Main loop for animation
+    bool quit = false;
+    while (!quit) {
+        // Handle events
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_KEYDOWN:
+                    switch (event.key.keysym.sym) {
+                        case SDLK_ESCAPE:
+                            quit = true;
+                            break;
+                        case SDLK_UP:
+                            horseY -= horseSpeed;
+                            break;
+                        case SDLK_DOWN:
+                            horseY += horseSpeed;
+                            break;
+                        case SDLK_LEFT:
+                            horseX -= horseSpeed;
+                            break;
+                        case SDLK_RIGHT:
+                            horseX += horseSpeed;
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        // Update animation frame
+        frameTimer++;
+        if (frameTimer >= frameDelay) {
+            currentFrame++;
+            if (currentFrame >= numFrames) {
+                currentFrame = 0;
+            }
+            frameTimer = 0;
+        }
+
+        // Draw current frame of horse animation
+        SDL_Rect frameRect = { currentFrame * frameWidth, 0, frameWidth, frameHeight };
+        SDL_Rect destRect = { horseX, horseY, frameWidth, frameHeight };
+        SDL_RenderCopy(renderer, horseTexture, &frameRect, &destRect);
+        SDL_RenderPresent(renderer);
+
+        // Delay to control animation speed
+        SDL_Delay(10);
+    }
+
+    // Clean up resources
+    SDL_DestroyTexture(horseTexture);
+    SDL_FreeSurface(horse);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}
